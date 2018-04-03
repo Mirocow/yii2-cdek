@@ -22,7 +22,7 @@ class CityField extends Widget
 
     public function run()
     {
-        $this->callback .= '$(\'#'.$this->hidden_attribute.'\').val(ui.item.id)';
+        $this->callback .= "$('#{$this->hidden_attribute}').val(ui.item.id);\n";
 
         $this->view->registerJs('
           $("#'.$this->attribute.'").autocomplete({
@@ -38,8 +38,9 @@ class CityField extends Widget
                   response($.map(data.geonames, function(item) {
                     return {
                       label: item.name,
-                      value: item.name,
-                      id: item.id
+                      value: item.cityName,
+                      id: item.id,
+                      src: item,
                     }
                   }));
                 }
