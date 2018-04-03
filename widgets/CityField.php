@@ -15,8 +15,9 @@ class CityField extends Widget
     /** @var ActiveForm */
     public $form;
     public $model;
+    public $options = [];
     public $attribute = 'city';
-    public $hidden_attribute = 'cityId';
+    public $hidden_attribute = 'city_id';
 
     public function run()
     {
@@ -46,11 +47,13 @@ class CityField extends Widget
                 $(\'#'.$this->hidden_attribute.'\').val(ui.item.id);
             }
           });        
-        ', View::POS_END, 'ArrayField');
+        ', View::POS_READY, 'ArrayField');
 
         $fields = [];
-        $fields[] = $this->form->field($this->model, $this->hidden_attribute)->hiddenInput(['id' => $this->hidden_attribute]);
-        $fields[] = $this->form->field($this->model, $this->attribute)->textInput(['maxlength' => TRUE, 'id' => $this->attribute]);
+        $fields[] = $this->form->field($this->model, $this->hidden_attribute)->hiddenInput(['id' => $this->hidden_attribute])->label(false);
+        $this->options['maxlength'] = TRUE;
+        $this->options['id'] = $this->attribute;
+        $fields[] = $this->form->field($this->model, $this->attribute)->textInput($this->options);
         return implode(PHP_EOL, $fields);
     }
 }
