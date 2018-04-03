@@ -16,11 +16,14 @@ class CityField extends Widget
     public $form;
     public $model;
     public $options = [];
+    public $callback = '';
     public $attribute = 'city';
     public $hidden_attribute = 'city_id';
 
     public function run()
     {
+        $this->callback .= '$(\'#'.$this->hidden_attribute.'\').val(ui.item.id)';
+
         $this->view->registerJs('
           $("#'.$this->attribute.'").autocomplete({
             source: function(request,response) {
@@ -43,17 +46,19 @@ class CityField extends Widget
               });
             },
             minLength: 1,
+            appendTo: "#'.$this->id.'",
             select: function(event,ui) {
-                $(\'#'.$this->hidden_attribute.'\').val(ui.item.id);
+                '.$this->callback.'
             }
           });        
-        ', View::POS_READY, 'ArrayField');
+        ', View::POS_READY, 'CityField');
 
         $fields = [];
         $fields[] = $this->form->field($this->model, $this->hidden_attribute)->hiddenInput(['id' => $this->hidden_attribute])->label(false);
         $this->options['maxlength'] = TRUE;
         $this->options['id'] = $this->attribute;
         $fields[] = $this->form->field($this->model, $this->attribute)->textInput($this->options);
-        return implode(PHP_EOL, $fields);
+        $content = implode(PHP_EOL, $fields);
+        return Html::tag('div', $content, ['id' => $this->id]);
     }
 }
