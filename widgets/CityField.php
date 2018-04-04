@@ -4,6 +4,7 @@ namespace mirocow\cdek\widgets;
 
 use yii\helpers\Html;
 use yii\bootstrap\Widget;
+use yii\jui\JuiAsset;
 use yii\web\View;
 use yii\widgets\ActiveForm;
 
@@ -19,6 +20,11 @@ class CityField extends Widget
     public $callback = '';
     public $attribute = 'city';
     public $hidden_attribute = 'city_id';
+
+    public function init(){
+        parent::init();
+        JuiAsset::register($this->view);
+    }
 
     public function run()
     {
