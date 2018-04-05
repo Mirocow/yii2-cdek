@@ -2,6 +2,8 @@
 
 namespace mirocow\cdek\api;
 
+use yii\base\Exception;
+
 /**
  * Расчёт стоимости доставки СДЭК
  * Модуль для интернет-магазинов (ИМ)
