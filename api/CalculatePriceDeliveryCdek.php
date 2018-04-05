@@ -55,7 +55,7 @@ class CalculatePriceDeliveryCdek {
      * @param string $date дата планируемой отправки, например '2012-06-25'
      */
     public function setDateExecute($date) {
-        $this->dateExecute = date($date);
+        $this->dateExecute = date('Y-m-d', $date);
     }
 
     /**

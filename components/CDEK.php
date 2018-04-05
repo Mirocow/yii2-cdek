@@ -16,16 +16,45 @@ use yii\web\NotFoundHttpException;
  */
 class CDEK extends Component
 {
-    public $authLogin = '';
 
-    public $authPassword = '';
+    // Экспресс лайт дверь-дверь срок: 3-4 дней
+    const TARIF_DOR_DOR = 1;
 
-    public $senderCityId = '';
+    // Супер-экспресс дверь-дверь срок: 1 дней
+    const TARIF_SUPPER_EXPRESS_DOR_DOR = 3;
 
-    public $receiverCityId = '';
+    // Экспресс лайт склад-склад срок: 3-4 дней
+    const TARIF_EXPRESS_STORE_STORE = 10;
+
+    // Экспресс лайт склад-дверь срок: 3-4 дней
+    const TARIF_EXPRESS_LIGHT_STORE_STORE = 11;
+
+    // Экспресс лайт дверь-склад срок: 3-4 дней
+    const TARIF_EXPRESS_LIGHT_DOR_STORE = 12;
+
+    public $authLogin = null;
+
+    public $authPassword = null;
+
+    public $senderCityId = null;
+
+    public $receiverCityId = null;
+
+    public $dateExecute = null;
+
+    public $tariffId = self::TARIF_DOR_DOR;
+
+    public $weight = 1000;
+
+    public $length = 10;
+
+    public $width = 10;
+
+    public $height = 20;
 
     public function calculate()
     {
+
         $calc = new CalculatePriceDeliveryCdek;
 
         if($this->authLogin && $this->authPassword) {
@@ -33,46 +62,46 @@ class CDEK extends Component
         }
 
         //устанавливаем город-отправитель
-        $calc->setSenderCityId($_REQUEST['senderCityId']);
+        $calc->setSenderCityId($this->senderCityId);
 
         //устанавливаем город-получатель
-        $calc->setReceiverCityId($_REQUEST['receiverCityId']);
+        $calc->setReceiverCityId($this->receiverCityId);
 
         //устанавливаем дату планируемой отправки
-        $calc->setDateExecute($_REQUEST['dateExecute']);
+        if($this->dateExecute) {
+            $calc->setDateExecute($this->dateExecute);
+        }
 
         //задаём список тарифов с приоритетами
-        $calc->addTariffPriority($_REQUEST['tariffList1']);
-        $calc->addTariffPriority($_REQUEST['tariffList2']);
+        $calc->addTariffPriority(self::TARIF_DOR_DOR, 1);
+        $calc->addTariffPriority(self::TARIF_SUPPER_EXPRESS_DOR_DOR, 3);
+        $calc->addTariffPriority(self::TARIF_EXPRESS_STORE_STORE, 2);
+        $calc->addTariffPriority(self::TARIF_EXPRESS_LIGHT_DOR_STORE, 4);
 
         //устанавливаем тариф по-умолчанию
-        //$calc->setTariffId('137');
-
-        //устанавливаем режим доставки
-        $calc->setModeDeliveryId($_REQUEST['modeId']);
+        $calc->setTariffId($this->tariffId);
 
         //добавляем места в отправление
-        $calc->addGoodsItemBySize($_REQUEST['weight1'], $_REQUEST['length1'], $_REQUEST['width1'], $_REQUEST['height1']);
-        $calc->addGoodsItemByVolume($_REQUEST['weight2'], $_REQUEST['volume2']);
+        if($this->weight) {
+            $calc->addGoodsItemBySize($this->weight / 1000, $this->length, $this->width, $this->height);
+            //$calc->addGoodsItemByVolume($_REQUEST['weight2'], $_REQUEST['volume2']);
+        }
 
         if ($calc->calculate() === true) {
             $res = $calc->getResult();
-            //echo 'Цена доставки: ' . $res['result']['price'] . 'руб.<br />';
-            //echo 'Срок доставки: ' . $res['result']['deliveryPeriodMin'] . '-' .$res['result']['deliveryPeriodMax'] . ' дн.<br />';
-            //echo 'Планируемая дата доставки: c ' . $res['result']['deliveryDateMin'] . ' по ' . $res['result']['deliveryDateMax'] . '.<br />';
-            //echo 'id тарифа, по которому произведён расчёт: ' . $res['result']['tariffId'] . '.<br />';
-            //if(array_key_exists('cashOnDelivery', $res['result'])) {
-            //    echo 'Ограничение оплаты наличными, от (руб): ' . $res['result']['cashOnDelivery'] . '.<br />';
-            //}
+            if(isset($res['result'])){
+                return $res['result'];
+            }
         } else {
-            //$err = $calc->getError();
-            /*if( isset($err['error']) && !empty($err) ) {
-                //var_dump($err);
+            $err = $calc->getError();
+            if( isset($err['error']) && !empty($err) ) {
+                $error = '';
                 foreach($err['error'] as $e) {
-                    echo 'Код ошибки: ' . $e['code'] . '.<br />';
-                    echo 'Текст ошибки: ' . $e['text'] . '.<br />';
+                    $error .= "Код ошибки: {$e['code']}\n";
+                    $error .= "Текст ошибки: {$e['text']}\n\n";
                 }
-            }*/
+                throw new Exception($error);
+            }
         }
     }
 }
